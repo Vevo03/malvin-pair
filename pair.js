@@ -1,127 +1,95 @@
-import express from 'express';
-import fs from 'fs';
-import pino from 'pino';
-import { makeWASocket, useMultiFileAuthState, delay, makeCacheableSignalKeyStore, Browsers, jidNormalizedUser } from '@whiskeysockets/baileys';
-import { upload } from './mega.js';
+const { kmakeid } = require('./gen-id');
+const express = require('express');
+const fs = require('fs');
+let router = express.Router();
+const pino = require("pino");
+const { default: makeWASocket, useMultiFileAuthState, delay, Browsers, makeCacheableSignalKeyStore, getAggregateVotesInPollMessage, DisconnectReason, WA_DEFAULT_EPHEMERAL, jidNormalizedUser, proto, getDevice, generateWAMessageFromContent, fetchLatestBaileysVersion, makeInMemoryStore, getContentType, generateForwardMessageContent, downloadContentFromMessage, jidDecode } = require('@whiskeysockets/baileys')
 
-const router = express.Router();
-
-// Ensure the session directory exists
+const { upload } = require('./mega');
 function removeFile(FilePath) {
-    try {
-        if (!fs.existsSync(FilePath)) return false;
-        fs.rmSync(FilePath, { recursive: true, force: true });
-    } catch (e) {
-        console.error('Error removing file:', e);
-    }
+    if (!fs.existsSync(FilePath)) return false;
+    fs.rmSync(FilePath, { recursive: true, force: true });
 }
-
 router.get('/', async (req, res) => {
+    const id = makeid();
     let num = req.query.number;
-    let dirs = './' + (num || `session`);
-    
-    // Remove existing session if present
-    await removeFile(dirs);
-    
-    async function initiateSession() {
-        const { state, saveCreds } = await useMultiFileAuthState(dirs);
-
+    async function GIFTED_MD_PAIR_CODE() {
+        const {
+            state,
+            saveCreds
+        } = await useMultiFileAuthState('./temp/' + id);
         try {
-            let MalvinTechInc = makeWASocket({
+var items = ["Safari"];
+function selectRandomItem(array) {
+  var randomIndex = Math.floor(Math.random() * array.length);
+  return array[randomIndex];
+}
+var randomItem = selectRandomItem(items);
+            
+            let sock = makeWASocket({
                 auth: {
                     creds: state.creds,
                     keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
-                },
-                printQRInTerminal: false,
-                logger: pino({ level: "fatal" }).child({ level: "fatal" }),
-                browser: ["Ubuntu", "Chrome", "20.0.04"],
-            });
-
-            if (!MalvinTechInc.authState.creds.registered) {
-                await delay(2000);
-                num = num.replace(/[^0-9]/g, '');
-                const code = await MalvinTechInc.requestPairingCode(num);
-                if (!res.headersSent) {
-                    console.log({ num, code });
-                    await res.send({ code });
+                
                 }
             }
+            sock.ev.on('creds.update', saveCreds);
+            sock.ev.on("connection.update", async (s) => {
 
-            MalvinTechInc.ev.on('creds.update', saveCreds);
-            MalvinTechInc.ev.on("connection.update", async (s) => {
-                const { connection, lastDisconnect } = s;
+    const {
+                    connection,
+                    lastDisconnect
+                } = s
+                        
+                        const { upload } = require('./mega');
+                        const mega_url = await upload(fs.createReadStream(rf), `${sock.user.id}.json`);
+                        const string_session = mega_url.replace('https://mega.nz/file/', '');
+                        let md = "CRISS-AI-" + string_session;
+                        let code = await sock.sendMessage(sock.user.id, { text: md });
+                        let desc = `*Hello there* 
 
-                if (connection === "open") {
-                    await delay(10000);
-                    const sessionGlobal = fs.readFileSync(dirs + '/creds.json');
-
-                    // Helper to generate a random Mega file ID
-                    function generateRandomId(length = 6, numberLength = 4) {
-                        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-                        let result = '';
-                        for (let i = 0; i < length; i++) {
-                            result += characters.charAt(Math.floor(Math.random() * characters.length));
-                        }
-                        const number = Math.floor(Math.random() * Math.pow(10, numberLength));
-                        return `${result}${number}`;
-                    }
-
-                    // Upload session file to Mega
-                    const megaUrl = await upload(fs.createReadStream(`${dirs}/creds.json`), `${generateRandomId()}.json`);
-                    let stringSession = megaUrl.replace('https://mega.nz/file/', ''); // Extract session ID from URL
-                    stringSession = 'CRISS-AI-' + stringSession;  // Prepend your name to the session ID
-
-                    // Send the session ID to the target number
-                    const userJid = jidNormalizedUser(num + '@s.whatsapp.net');
-                    await MalvinTechInc.sendMessage(userJid, { text: stringSession });
-
-                    // Send confirmation message
-                    await MalvinTechInc.sendMessage(userJid, { text: `Hey there, MALVIN-XD User!* 👋🏻
-
-Thanks for using *CRISS-AI* — your session has been successfully created!
-
-🔐 *Session ID:* Sent above  
-⚠️ *Keep it safe!* Do NOT share this ID with anyone.
-
-——————
-
-*✅ Stay Updated:*  
-Join our official WhatsApp Channel:  
+*Use this session to link to deploy your bot*
+ *Thanks for Choosing us* 
+ Join WhatsApp Channel
 https://whatsapp.com/channel/0029Vb0HIV2G3R3s2II4181g
-
-*💻 Source Code:*  
-Fork & explore the project on GitHub:  
-https://github.com/criss-vevo/CRISS-AI
-
-——————
-
-*© Powered by CrissVevo*
-Stay cool and hack smart. ✌🏻` });
-
-                    // Clean up session after use
-                    await delay(100);
-                    removeFile(dirs);
-                    process.exit(0);
-                } else if (connection === 'close' && lastDisconnect && lastDisconnect.error && lastDisconnect.error.output.statusCode !== 401) {
-                    console.log('Connection closed unexpectedly:', lastDisconnect.error);
-                    await delay(10000);
-                    initiateSession(); // Retry session initiation if needed
+`; 
+                        await sock.sendMessage(sock.user.id, {
+text: desc,
+contextInfo: {
+externalAdReply: {
+title: "Criss Vevo",
+thumbnailUrl: "https://files.catbox.moe/gs8gi2.jpg",
+sourceUrl: "https://whatsapp.com/channel/0029Vb0HIV2G3R3s2II4181g",
+mediaType: 1,
+renderLargerThumbnail: true
+}  
+}
+},
+{quoted)
+                    }
+                    await delay(10);
+                    await sock.ws.close();
+                    await removeFile('./temp/' + id);
+                    console.log(`👤 ${sock.user.id} 𝗖𝗼𝗻𝗻𝗲𝗰𝘁𝗲𝗱 ✅ 𝗥𝗲𝘀𝘁𝗮𝗿𝘁𝗶𝗻𝗴 𝗽𝗿𝗼𝗰𝗲𝘀𝘀...`);
+                    await delay(10);
+                    process.exit();
+                } else if (connection === "close" && lastDisconnect && lastDisconnect.error && lastDisconnect.error.output.statusCode != 401) {
+                    await delay(10);
+                    GIFTED_MD_PAIR_CODE();
                 }
             });
         } catch (err) {
-            console.error('Error initializing session:', err);
+            console.log("service restated");
+            await removeFile('./temp/' + id);
             if (!res.headersSent) {
-                res.status(503).send({ code: 'Service Unavailable' });
+                await res.send({ code: "❗ Service Unavailable" });
             }
         }
     }
-
-    await initiateSession();
-});
-
-// Global uncaught exception handler
-process.on('uncaughtException', (err) => {
-    console.log('Caught exception: ' + err);
-});
-
-export default router;
+   return await GIFTED_MD_PAIR_CODE();
+});/*
+setInterval(() => {
+    console.log("☘️ 𝗥𝗲𝘀𝘁𝗮𝗿𝘁𝗶𝗻𝗴 𝗽𝗿𝗼𝗰𝗲𝘀𝘀...");
+    process.exit();
+}, 180000); //1440min*/
+module.exports = router;
